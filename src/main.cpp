@@ -59,7 +59,7 @@ int main() {
           double angle = std::stod(j[1]["steering_angle"].get<string>());
           double steer_value;
 		  pid.UpdateError(cte);
-		  steer_value = pid.TotalError();
+		  steer_value = -pid.TotalError();
 		  if (steer_value > 1) {
 			  steer_value = 1;
 		  }
