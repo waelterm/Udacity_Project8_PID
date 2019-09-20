@@ -1,5 +1,5 @@
 #include "PID.h"
-
+#include <iostream>
 /**
  * TODO: Complete the PID class. You may add any additional desired functions.
  */
@@ -26,14 +26,19 @@ void PID::Init(double Kp_, double Ki_, double Kd_) {
 
 void PID::UpdateError(double cte) {
 	if (d_error == 999999) {
-		p_error = cte;
+		d_error = 0;
 	}
 	i_error += cte;
-	d_error = cte - p_error;
+	if (i_error > 20) 
+		i_error = 20;
+	if (i_error < -20)
+		i_error = -20;
+	if (cte != p_error)
+		d_error = cte - p_error;
 	p_error = cte;
-	std::cout << "Integral Error: " << std::endl;
-	std::cout << "Differantial Error: " << std::endl;
-	std::cout << "Error: " << std::endl;
+	std::cout << "Integral Component: " << i_error*Ki << std::endl;
+	std::cout << "Differantial Component: " << d_error*Kd << std::endl;
+	std::cout << "Proportional Component " << p_error*Kp << std::endl;
 
 }
 
