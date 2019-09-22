@@ -1,32 +1,107 @@
-# CarND-Controls-PID
-Self-Driving Car Engineer Nanodegree Program
+CarND-Controls-PID
+---
+This repository include my solution to the Self-Driving Car Engineer Nanodegree Program from Udacity
 
 ---
 
-## Dependencies
+## Reflection
 
-* cmake >= 3.5
- * All OSes: [click here for installation instructions](https://cmake.org/install/)
-* make >= 4.1(mac, linux), 3.81(Windows)
-  * Linux: make is installed by default on most Linux distros
-  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
-* gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
-  * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
-  * Windows: recommend using [MinGW](http://www.mingw.org/)
-* [uWebSockets](https://github.com/uWebSockets/uWebSockets)
-  * Run either `./install-mac.sh` or `./install-ubuntu.sh`.
-  * If you install from source, checkout to commit `e94b6e1`, i.e.
-    ```
-    git clone https://github.com/uWebSockets/uWebSockets 
-    cd uWebSockets
-    git checkout e94b6e1
-    ```
-    Some function signatures have changed in v0.14.x. See [this PR](https://github.com/udacity/CarND-MPC-Project/pull/3) for more details.
-* Simulator. You can download these from the [project intro page](https://github.com/udacity/self-driving-car-sim/releases) in the classroom.
+### Controller Description
 
-Fellow students have put together a guide to Windows set-up for the project [here](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/files/Kidnapped_Vehicle_Windows_Setup.pdf) if the environment you have set up for the Sensor Fusion projects does not work for this project. There's also an experimental patch for windows in this [PR](https://github.com/udacity/CarND-PID-Control-Project/pull/3).
+####Proportional Control
+
+A proportional controller, calculates an output in direct proportion to the error between the reference signal and the real measurement:
+  
+  `
+control_output = -Kp * error
+`  
+
+This leads to a controller that oscillates. The higher the proportional gain Kp i, the higher the frequency of the oscillation will be.
+The oscillations usually increase with time making the controller unstable. This can be seen in this [video](./Videos/P-Controller.mp4)
+
+####Derivative Control
+
+A derivative controller, calculates an output in direct proportion to rate of change of the error.
+The rate of change can be discretized by using the previous error and the current error and dividing by the time difference between the measurements.
+  
+`
+error_rate_of_change = (current_error - previous_error)/time_difference `
+   
+`control_output = - Kd * error_rate_of_change`  
+
+This leads to a controller that responds only to the rate of the error. 
+Due to it not using any information about the reference signal, it will drift away from the center due to the delay between measurement and actuation.
+This can be seen in the following video: [video](./Videos/D-Controller.mp4)
+
+####Integral Control
+
+A integral controller, calculates an output in direct proportion to the integral of errors over time.
+The integral can be discretized by using summing up the product of errors and time-steps. 
+
+`error_integral += error*time_difference`
+`control_output = - Ki * error_integral`  
+
+This leads to a controller that responds with large delays because the error has to accumulate over time. 
+This can be seen in the following video: [video](./Videos/I-Controller.mp4)
+
+####PD-Control
+
+A proportional and derivative controller uses both the error_rate_of_change and the error to calculate its response.
+
+`error_rate_of_change = (current_error - previous_error)/time_difference `
+   
+`control_output = - Kd * error_rate_of_change - Kp * error`  
+
+If tuned correctly, the derivative proportional will counteract the oscillations of the P-Controller by avoiding overshooting the desired state.
+However, there can be a steady state offset due to noise or drifts in the system.
+No large offsets can be seen in the video, this indicates that there is no significant drift in the system: 
+[video](./Videos/PD-Controller.mp4)
+
+####PID-Control
+
+A proportional, integral and derivative controller uses the error_rate_of_change, the error_integral and the error to calculate its response.
+
+`error_rate_of_change = (current_error - previous_error)/time_difference `
+
+`error_integral += error*time_difference`
+   
+`control_output = - Kd * error_rate_of_change - Kp * error - Ki * error_integral`  
+
+If tuned correctly, the derivative proportional will counteract the oscillations of the P-Controller by avoiding overshooting the desired state.
+Furthermore, the integral portion will counteract any steady-state offsets due to drift. As there have not been found any large offsets in the PD-Controller, the Ki coefficient can be relatively small.
+The result can be seen in the video: 
+[video](./Videos/PID-Controller.mp4)
+
+
+##Parameter Tuning
+I followed the following four steps to find the final hyperparameters for this controller:
+1. **P - Controller:** I started with a P-controller and adjusted the proportional gain until I found a value that could keep the vehicle in the lane for a few seconds.
+As expected I saw oscialltions. The chosen Kp was 0.06.  
+2. **PD - Controller:** I added the derivative control, starting with small values until I could not see any major oscillation anymore.
+The chose Kd was 0.725
+3. **I - Controller:** The PD controller did not see any significant offsets except for in curves, I experimented with different Ki values to decrease this offset.
+The chosen Ki was 0.0012. However, I noticed that after the curve the integral component made the vehicle over-correct for the previous offset in the courve.
+To avoid the integral component getting to large, I added a saturation on the integral error. This can be found in pid.cpp line 32 to line 35.
+4. **Manual Twiddle Algorithm:** The previously mentioned constants of Kp = 0.06, Kd = 0.725, and Ki= 0.012, resulted in a controller that could complete an entire lap on the track.
+For the Fine tuning, I added a print statement to give out the mean squared error of the controller.
+I then manually followed the twiddle algorithm by letting the controller running for one lap, and using the mean-square-error to adjust the parameters.
+  
+    The final parameters were chosen to be :
+    * Kp = 0.11
+    * Ki = 0.0012
+    * Kd = 1.625
+    
+    The best performance with these parameters was a mean squared error of ~0.2 meters.
+    
+
+
+
+
+
+
+
+
+
 
 ## Basic Build Instructions
 
@@ -36,63 +111,4 @@ Fellow students have put together a guide to Windows set-up for the project [her
 4. Run it: `./pid`. 
 
 Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
-
-## Editor Settings
-
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
-
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
-
-## Code Style
-
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
-
-## Project Instructions and Rubric
-
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
-
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
-
-## Hints!
-
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
 
