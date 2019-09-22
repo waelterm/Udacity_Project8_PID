@@ -1,4 +1,4 @@
-CarND-Controls-PID
+#CarND-Controls-PID
 ---
 This repository include my solution to the Self-Driving Car Engineer Nanodegree Program from Udacity
 
@@ -93,14 +93,6 @@ I then manually followed the twiddle algorithm by letting the controller running
     
     The best performance with these parameters was a mean squared error of ~0.2 meters.
     
-
-
-
-
-
-
-
-
 
 
 ## Basic Build Instructions
