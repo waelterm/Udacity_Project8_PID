@@ -1,14 +1,13 @@
-#CarND-Controls-PID
+CarND-Controls-PID
 ---
 This repository include my solution to the Self-Driving Car Engineer Nanodegree Program from Udacity
 
 ---
 
-## Reflection
 
-### Controller Description
+## Controller Description
 
-####Proportional Control
+###Proportional Control
 
 A proportional controller, calculates an output in direct proportion to the error between the reference signal and the real measurement:
   
@@ -19,7 +18,7 @@ control_output = -Kp * error
 This leads to a controller that oscillates. The higher the proportional gain Kp i, the higher the frequency of the oscillation will be.
 The oscillations usually increase with time making the controller unstable. This can be seen in this [video](./Videos/P-Controller.mp4)
 
-####Derivative Control
+###Derivative Control
 
 A derivative controller, calculates an output in direct proportion to rate of change of the error.
 The rate of change can be discretized by using the previous error and the current error and dividing by the time difference between the measurements.
@@ -33,7 +32,7 @@ This leads to a controller that responds only to the rate of the error.
 Due to it not using any information about the reference signal, it will drift away from the center due to the delay between measurement and actuation.
 This can be seen in the following video: [video](./Videos/D-Controller.mp4)
 
-####Integral Control
+###Integral Control
 
 A integral controller, calculates an output in direct proportion to the integral of errors over time.
 The integral can be discretized by using summing up the product of errors and time-steps. 
@@ -44,7 +43,7 @@ The integral can be discretized by using summing up the product of errors and ti
 This leads to a controller that responds with large delays because the error has to accumulate over time. 
 This can be seen in the following video: [video](./Videos/I-Controller.mp4)
 
-####PD-Control
+###PD-Control
 
 A proportional and derivative controller uses both the error_rate_of_change and the error to calculate its response.
 
@@ -57,7 +56,7 @@ However, there can be a steady state offset due to noise or drifts in the system
 No large offsets can be seen in the video, this indicates that there is no significant drift in the system: 
 [video](./Videos/PD-Controller.mp4)
 
-####PID-Control
+###PID-Control
 
 A proportional, integral and derivative controller uses the error_rate_of_change, the error_integral and the error to calculate its response.
 
