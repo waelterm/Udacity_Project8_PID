@@ -18,7 +18,7 @@ control_output = -Kp * error
 This leads to a controller that oscillates. The higher the proportional gain Kp i, the higher the frequency of the oscillation will be.
 The oscillations usually increase with time making the controller unstable. This can be seen in this [video](./Videos/P-Controller.mp4)
 
-###Derivative Control
+### Derivative Control
 
 A derivative controller, calculates an output in direct proportion to rate of change of the error.
 The rate of change can be discretized by using the previous error and the current error and dividing by the time difference between the measurements.
